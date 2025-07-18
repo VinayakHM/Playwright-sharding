@@ -104,18 +104,18 @@ jobs:
       if: always()
       uses: 8398a7/action-slack@v3
       with:
-        status: custom
-        fields: repo,eventName,workflow,job,took
-        custom_payload: |
-          {
-            attachments: [{
-              color: '${{ env.STATUS }}' === 'success' ? 'good' : 'danger',
-              title: `Playwright Demo Automation Results :test_tube:`,
-              fields: [{
-                title: 'Site Under Test',
-                value: '${{ env.APP_URL }}',
-                short: true
-              },
+          status: custom
+          fields: repo,eventName,workflow,job,took
+          custom_payload: |
+            {
+              attachments: [{
+                color: '${{ env.STATUS }}' === 'success' ? 'good' : 'danger',
+                title: `Playwright Demo Automation Results :test_tube:`,
+                fields: [{
+                  title: 'Site Under Test',
+                  value: '${{ env.APP_URL }}',
+                  short: true
+                },
                 {
                   title: 'Triggered By',
                   value: [{'origin': 'pull_request', 'new': 'Pull Request'}, {'origin': 'schedule', 'new': 'Schedule'}, {'origin': 'repository_dispatch', 'new': 'Deploy'}, {'origin': 'workflow_dispatch', 'new': 'GitHub Actions'}].find(item => item.origin === `${process.env.AS_EVENT_NAME}`).new || `${process.env.AS_EVENT_NAME}`,
@@ -153,5 +153,5 @@ jobs:
                 }]
               }]
             }
-env:
-  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required        
+      env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
