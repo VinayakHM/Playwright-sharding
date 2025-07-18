@@ -38,7 +38,9 @@ jobs:
       if: always()
       run: |
         mkdir -p playwright-report
-        cp summary.json playwright-report/summary.json
+        if [ -f summary.json ]; then
+          cp summary.json playwright-report/summary.json
+        fi
 
     - name: Upload blob report to GitHub Actions Artifacts
       if: ${{ !cancelled() }}
