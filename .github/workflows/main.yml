@@ -1,0 +1,104 @@
+name: Playwright Tests
+
+on:
+  workflow_dispatch
+  # push:
+  #   branches:
+  #     - main
+  #     - master
+  # pull_request:
+  #   branches: 
+  #     - main 
+  #     - master
+  # schedule:
+  #   - cron: '*/15 * * * *'    # At every 15th minute
+
+env:
+  APP_URL: 'https://your-app-url.com'
+  user: ${{ secrets.USER }}
+  pwd: ${{ secrets.PWD }}
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+
+    - name: Run Playwright tests
+      run: npx playwright test
+
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report
+        path: test-results/report/
+        retention-days: 5
+
+    - name: Parse test results
+      if: always()
+      run: |
+        results=$(cat test-results/results/results.json)
+        stats=$(echo $results | jq .stats)
+        total=$(echo $stats | jq '.expected + .unexpected + .skipped + .flaky')
+        pass=$(echo $stats | jq '.expected')
+        fail=$(echo $stats | jq '.unexpected')
+        skip=$(echo $stats | jq '.skipped')
+        flaky=$(echo $stats | jq '.flaky')
+        duration=$(echo $stats | jq '.duration')
+        duration_hms=$(printf '%02dh:%02dm:%02ds' $(echo "$duration/3600" | bc) $(echo "($duration%3600)/60" | bc) $(echo "$duration%60" | bc))
+        health=$((pass * 100 / total))
+        echo "total=$total" >> $GITHUB_ENV
+        echo "pass=$pass" >> $GITHUB_ENV
+        echo "fail=$fail" >> $GITHUB_ENV
+        echo "skip=$skip" >> $GITHUB_ENV
+        echo "flaky=$flaky" >> $GITHUB_ENV
+        echo "duration=$duration_hms" >> $GITHUB_ENV
+        echo "health=$health" >> $GITHUB_ENV
+
+    - name: Set Slack color based on job status
+      if: always()
+      run: |
+        if [ "${{ job.status }}" = "success" ]; then
+          echo "SLACK_COLOR=good" >> $GITHUB_ENV
+        else
+          echo "SLACK_COLOR=danger" >> $GITHUB_ENV
+        fi
+
+    - name: Send Slack Notification via Webhook
+      if: always()
+      run: |
+        curl -X POST -H 'Content-type: application/json' --data '{
+          "attachments": [
+            {
+              "color": "'"${{ env.SLACK_COLOR }}"'",
+              "title": "🚀 :playwright: Playwright Test Results",
+              "fields": [
+                { "title": "Site", "value": "'"${{ env.APP_URL }}"'", "short": true },
+                { "title": "Triggered By", "value": "'"${{ github.event_name }}"'", "short": true },
+                { "title": "Repo", "value": "'"${{ github.repository }}"'", "short": true },
+                { "title": "Workflow", "value": "'"${{ github.workflow }}"'", "short": true },
+                { "title": "🛠️ Job", "value": "'"${{ github.job }}"'", "short": true },
+                { "title": "📊 Total Tests", "value": "'"${{ env.total }}"'", "short": true },
+                { "title": "✅ Passed", "value": "'"${{ env.pass }}"'", "short": true },
+                { "title": "❌ Failed", "value": "'"${{ env.fail }}"'", "short": true },
+                { "title": "⚠️ Skipped", "value": "'"${{ env.skip }}"'", "short": true },
+                { "title": "🤷 Flaky", "value": "'"${{ env.flaky }}"'", "short": true },
+                { "title": "🩺 Health", "value": "'"${{ env.health }}%"'", "short": true },
+                { "title": "⏱️ Duration", "value": "${{ env.duration }}", "short": true },
+                {"title": "User", "value": "'"${{ github.actor }}"'", "short": true }
+              ]
+            }
+          ]
+        }' ${{ secrets.SLACK_WEBHOOK_URL }}
