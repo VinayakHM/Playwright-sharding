@@ -36,7 +36,9 @@ jobs:
 
     - name: Copy Summary to playwright-report/ folder
       if: always()
-      run: cp summary.json playwright-report/summary.json
+      run: |
+        mkdir -p playwright-report
+        cp summary.json playwright-report/summary.json
 
     - name: Upload blob report to GitHub Actions Artifacts
       if: ${{ !cancelled() }}
