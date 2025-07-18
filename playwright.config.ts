@@ -27,20 +27,10 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   // reporter: 'html',
   reporter: process.env.CI ?[['blob'],['playwright-json-summary-reporter']]:[
-    ['./src/utils/logger/TestListener.ts'],
-    [
-      'allure-playwright',
-      {
-        detail: false,
-        suiteTitle: false,
-        environmentInfo: {
-          OS: process.platform.toUpperCase(),
-        },
-      },
-    ],
     ['html', { outputFolder: './test-results/report', open: 'on-failure' }],
     ['json', { outputFile: './test-results/results/results.json' }],
-    ['blob']
+    ['blob'],
+    ['playwright-json-summary-reporter']
   ],
 
   // reporter: [
