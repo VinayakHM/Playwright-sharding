@@ -41,6 +41,12 @@ jobs:
         if [ -f summary.json ]; then
           cp summary.json playwright-report/summary.json
         fi
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: report-${{ matrix.shardIndex }}
+        path: playwright-report/
+        retention-days: 3    
 
     - name: Upload blob report to GitHub Actions Artifacts
       if: ${{ !cancelled() }}
@@ -70,6 +76,19 @@ jobs:
           ${{ runner.os }}-node-
     - name: Install dependencies
       run: npm ci
+
+    - uses: actions/download-artifact@v3
+      with:
+        path: playwright-report/
+
+    - name: Display structure of downloaded files
+      run: ls -R
+
+    - name: Run Report Merge
+      run: npm run merge
+
+    - name: Display structure of Merged
+      run: ls -R
 
     - name: Read Summary Report to Get Test Results
       if: always()
