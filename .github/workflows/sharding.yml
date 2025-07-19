@@ -46,7 +46,7 @@ jobs:
       with:
         name: report-${{ matrix.shardIndex }}
         path: playwright-report/
-        retention-days: 3    
+        retention-days: 2    
 
     - name: Upload blob report to GitHub Actions Artifacts
       if: ${{ !cancelled() }}
