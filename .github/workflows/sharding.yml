@@ -165,6 +165,16 @@ jobs:
                   short: true
                 },
                 {
+                  title: 'Passed',
+                  value: (`${{ env.PASSED }}`.match(/.spec.ts/g) || []).length,
+                  short: true
+                },
+                {
+                  title: 'Failed',
+                  value: (`${{ env.FAILURES }}`.match(/.spec.ts/g) || []).length,
+                  short: true
+                },
+                {
                   title: 'Pull Request',
                   value: `${{ env.PULL_REQUEST_URL }}`,
                   short: false
