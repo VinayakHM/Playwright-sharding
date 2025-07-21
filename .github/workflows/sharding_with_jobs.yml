@@ -41,6 +41,8 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
 
   playwright-tests:
+    name: Run Playwright Tests (${{ matrix.shardIndex }}/${{ strategy.job-total }})
+    needs: install
     timeout-minutes: 60
     runs-on: ubuntu-latest
     strategy:
