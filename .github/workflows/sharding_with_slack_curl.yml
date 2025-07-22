@@ -270,8 +270,6 @@ jobs:
                              {title: "Failed", value: $failed, short: true},
                              {title: "Skipped", value: $skipped, short: true},
                              {title: "Flakey", value: $flakey, short: true},
-                             {title: "Pull Request", value: $pr, short: false},
-                             {title: "Failures", value: $failures, short: false}
                            ]
                          }]
                        }')
