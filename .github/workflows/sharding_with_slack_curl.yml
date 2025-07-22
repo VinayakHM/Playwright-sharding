@@ -269,7 +269,7 @@ jobs:
                              {title: "Passed", value: $passed, short: true},
                              {title: "Failed", value: $failed, short: true},
                              {title: "Skipped", value: $skipped, short: true},
-                             {title: "Flakey", value: $flakey, short: true},
+                             {title: "Flakey", value: $flakey, short: true}
                            ]
                          }]
                        }')
