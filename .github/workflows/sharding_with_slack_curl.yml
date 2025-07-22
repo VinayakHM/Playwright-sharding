@@ -142,10 +142,10 @@ jobs:
     needs: [install, playwright-tests]
     runs-on: ubuntu-latest
     env:
-      PLAYWRIGHT_VERSION: ${{ needs.tests.outputs.playwright_version }}
-      STARTED_AT: ${{ needs.tests.outputs.started_at }}
-      APP_URL: ${{ needs.tests.outputs.app_url }}
-      PULL_REQUEST_URL: ${{ needs.tests.outputs.pull_request_url }}
+      PLAYWRIGHT_VERSION: ${{ needs.playwright-tests.outputs.playwright_version }}
+      STARTED_AT: ${{ needs.playwright-tests.outputs.started_at }}
+      APP_URL: ${{ needs.playwright-tests.outputs.app_url }}
+      PULL_REQUEST_URL: ${{ needs.playwright-tests.outputs.pull_request_url }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
