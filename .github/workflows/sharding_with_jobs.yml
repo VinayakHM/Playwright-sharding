@@ -176,6 +176,12 @@ jobs:
         name: html-report--attempt-${{ github.run_attempt }}--${{ github.run_id }}
         path: playwright-report
         retention-days: 2
+
+    - name: Output time taken
+      if: always()
+      run: |
+        echo "Duration: $(($(($(date +%s) - ${{ env.STARTED_AT }}))/60)) minute(s)"
+        echo "DURATION=$(($(($(date +%s) - ${{ env.STARTED_AT }}))/60))" >> $GITHUB_ENV    
    
     - name: Send Slack Notification
       if: always()
@@ -309,6 +315,12 @@ jobs:
         name: html-report--attempt-${{ github.run_attempt }}
         path: playwright-report
         retention-days: 2
+
+    - name: Output time taken
+      if: always()
+      run: |
+        echo "Duration: $(($(($(date +%s) - ${{ env.STARTED_AT }}))/60)) minute(s)"
+        echo "DURATION=$(($(($(date +%s) - ${{ env.STARTED_AT }}))/60))" >> $GITHUB_ENV
 
     - name: Send Slack Notification via curl
       if: always()
