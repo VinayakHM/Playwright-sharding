@@ -241,3 +241,130 @@ jobs:
             }
       env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+
+  merge-reports-slack-curl:
+    if: ${{ !cancelled() }}
+    needs: [install, playwright-tests]
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Cache Node.js modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: ${{ runner.os }}-node-
+
+    - name: Install dependencies
+      run: npm ci
+
+    - uses: actions/download-artifact@v4
+      with:
+        path: playwright-report/
+
+    - name: Display structure of downloaded files
+      run: ls -R
+
+    - name: Run Report Merge
+      run: npm run merge
+
+    - name: Display structure of Merged
+      run: ls -R
+
+    - name: Read Summary Report to Get Test Results
+      if: always()
+      run: |
+        STATUS=$(cat ./summary.json | jq -r '.status')
+        STATUS="$(echo $STATUS | sed 's/failed/failure/;s/passed/success/')"
+        echo "STATUS=$STATUS" >> $GITHUB_ENV
+        PASSED=$(cat ./summary.json | jq -r '.passed[]' | tr '\n' ' ')
+        echo "PASSED=$PASSED" >> $GITHUB_ENV
+        TIMEOUT=$(cat ./summary.json | jq -r '.timedOut[]' | tr '\n' ' ' | sed 's/ /--->TIMEOUT /g')
+        FAILURES=$(cat ./summary.json | jq -r '.failed[]' | tr '\n' ' ')
+        FAILURES+=$TIMEOUT
+        echo "FAILURES=$FAILURES" >> $GITHUB_ENV
+
+    - name: Download blob reports from GitHub Actions Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: all-blob-reports
+        pattern: blob-report-*
+        merge-multiple: true
+
+    - name: Merge into HTML Report
+      run: npx playwright merge-reports --reporter html ./all-blob-reports
+
+    - name: Copy Summary to html-report/ folder
+      if: always()
+      run: cp summary.json playwright-report/summary.json
+
+    - name: Upload HTML report
+      uses: actions/upload-artifact@v4
+      with:
+        name: html-report--attempt-${{ github.run_attempt }}
+        path: playwright-report
+        retention-days: 2
+
+    - name: Send Slack Notification via curl
+      if: always()
+      env:
+        STATUS: ${{ env.STATUS }}
+        APP_URL: ${{ env.APP_URL }}
+        AS_EVENT_NAME: ${{ github.event_name }}
+        AS_REPO: ${{ github.repository }}
+        DURATION: ${{ env.DURATION }}
+        AS_WORKFLOW: "Playwright CI"
+        PASSED: ${{ env.PASSED }}
+        FAILURES: ${{ env.FAILURES }}
+        PULL_REQUEST_URL: ${{ github.event.pull_request.html_url }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        TRIGGERED_BY=$(echo '[{"origin":"pull_request","new":"Pull Request"},{"origin":"schedule","new":"Schedule"},{"origin":"repository_dispatch","new":"Deploy"},{"origin":"workflow_dispatch","new":"GitHub Actions"}]' | jq -r --arg e "$AS_EVENT_NAME" '.[] | select(.origin==$e) | .new // $e')
+
+        TOTAL_TESTS=$(echo "$FAILURES $PASSED" | grep -o ".spec.ts" | wc -l)
+        PASSED_COUNT=$(echo "$PASSED" | grep -o ".spec.ts" | wc -l)
+        FAILED_COUNT=$(echo "$FAILURES" | grep -o ".spec.ts" | wc -l)
+
+        if [[ -z "$FAILURES" ]]; then
+          FAILURE_FIELD="No failures"
+        elif [[ $FAILED_COUNT -gt 10 ]]; then
+          FAILURE_FIELD="Too many failures to print. Please go to GitHub to see full list of failures"
+        else
+          FAILURE_FIELD="```${FAILURES// /\\n}```"
+        fi
+
+        PAYLOAD=$(jq -n --arg color "$(if [[ "$STATUS" == "success" ]]; then echo "good"; else echo "danger"; fi)" \
+                       --arg app "$APP_URL" \
+                       --arg triggered "$TRIGGERED_BY" \
+                       --arg repo "$AS_REPO" \
+                       --arg duration "Took $DURATION minute(s)" \
+                       --arg workflow "$AS_WORKFLOW" \
+                       --arg total "$TOTAL_TESTS" \
+                       --arg passed "$PASSED_COUNT" \
+                       --arg failed "$FAILED_COUNT" \
+                       --arg pr "$PULL_REQUEST_URL" \
+                       --arg failures "$FAILURE_FIELD" \
+                       '{
+                         attachments: [{
+                           color: $color,
+                           title: "Playwright Demo Automation Results :test_tube:",
+                           fields: [
+                             {title: "Site Under Test", value: $app, short: true},
+                             {title: "Triggered By", value: $triggered, short: true},
+                             {title: "Repo", value: $repo, short: true},
+                             {title: "Execution Time", value: $duration, short: true},
+                             {title: "Workflow", value: $workflow, short: true},
+                             {title: "Total Tests", value: $total, short: true},
+                             {title: "Passed", value: $passed, short: true},
+                             {title: "Failed", value: $failed, short: true},
+                             {title: "Pull Request", value: $pr, short: false},
+                             {title: "Failures", value: $failures, short: false}
+                           ]
+                         }]
+                       }')
+
+        curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
