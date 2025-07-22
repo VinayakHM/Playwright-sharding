@@ -135,9 +135,17 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
-      - name: Copy Summary to playwright-report/ folder
+      # - name: Copy Summary to playwright-report/ folder
+      #   if: always()
+      #   run: cp summary.json playwright-report/summary.json
+
+      - name: Save Summary (if exists)
         if: always()
-        run: cp summary.json playwright-report/summary.json
+        run: |
+          mkdir -p playwright-report
+          if [ -f summary.json ]; then
+            cp summary.json playwright-report/summary.json
+          fi
 
       - uses: actions/upload-artifact@v4
         if: always()
