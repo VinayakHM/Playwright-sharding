@@ -1,4 +1,4 @@
-name: Playwright Tests Curl
+name: Playwright Tests result json
 on:
   workflow_dispatch
 jobs:
@@ -190,7 +190,7 @@ jobs:
         mkdir -p merged-results/final
         # Merge all results.json files into one
         npm run merge-playwright-results  
-              
+
     - name: Upload merged results
       uses: actions/upload-artifact@v4
       with:
