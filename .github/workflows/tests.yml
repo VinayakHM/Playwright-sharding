@@ -133,7 +133,7 @@ jobs:
           echo "APP_URL=https://www.automationexercise.com" >> $GITHUB_ENV
 
       - name: Run Playwright tests
-        run: APP_URL=${{ env.APP_URL}} npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Ensure playwright-report directory exists
         run: mkdir -p playwright-report
