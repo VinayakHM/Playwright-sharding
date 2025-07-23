@@ -178,7 +178,7 @@ jobs:
         skip=$(echo $stats | jq '.skipped')
         flaky=$(echo $stats | jq '.flaky')
         duration=$(echo $stats | jq '.duration')
-        duration_hms=$(printf '%02dh:%02dm:%02ds' $(echo "$duration/3600" | bc) $(echo "($duration%3600)/60" | bc) $(echo "$duration%60" | bc))
+        # duration_hms=$(printf '%02dh:%02dm:%02ds' $(echo "$duration/3600" | bc) $(echo "($duration%3600)/60" | bc) $(echo "$duration%60" | bc))
         health=$((pass * 100 / total))
         echo "total=$total" >> $GITHUB_ENV
         echo "pass=$pass" >> $GITHUB_ENV
