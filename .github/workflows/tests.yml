@@ -29,10 +29,10 @@ jobs:
       app_url: ${{ steps.set-env.outputs.APP_URL}}
       pull_request_url: ${{ steps.set-env.outputs.PULL_REQUEST_URL }}
 
-    env:
+    # env:
       # SLACK_BOT_USER_OAUTH_TOKEN: ${{ secrets.SLACK_BOT_USER_OAUTH_TOKEN }}
-      APP_URL: ${{ github.event.inputs.app_url }}
-      PULL_REQUEST_URL: ${{ github.event.client_payload.pull_request_url }}${{ github.event.pull_request._links.html.href }}${{ github.event.client_payload.github.event.issue.html_url }}
+      # APP_URL: ${{ github.event.inputs.app_url }}
+      # PULL_REQUEST_URL: ${{ github.event.client_payload.pull_request_url }}${{ github.event.pull_request._links.html.href }}${{ github.event.client_payload.github.event.issue.html_url }}
 
     steps:
       - uses: actions/checkout@v3
@@ -97,11 +97,11 @@ jobs:
       # app_url: ${{ steps.set-env.outputs.APP_URL}}
       pull_request_url: ${{ steps.set-env.outputs.PULL_REQUEST_URL }}
 
-    env:
+    # env:
       # PLAYWRIGHT_VERSION: ${{ needs.install.outputs.playwright_version }}
-      STARTED_AT: ${{ needs.install.outputs.started_at }}
+      # STARTED_AT: ${{ needs.install.outputs.started_at }}
       # APP_URL: ${{ needs.install.outputs.app_url }}
-      PULL_REQUEST_URL: ${{ needs.install.outputs.pull_request_url }}
+      # PULL_REQUEST_URL: ${{ needs.install.outputs.pull_request_url }}
       # CURRENTS_PROJECT_ID: ${{ secrets.CURRENTS_PROJECT_ID }}
       # CURRENTS_RECORD_KEY: ${{ secrets.CURRENTS_RECORD_KEY }}
       # CURRENTS_CI_BUILD_ID: reporter-${{ github.repository }}-${{ github.run_id }}-${{ github.run_attempt }}
