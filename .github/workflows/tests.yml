@@ -127,10 +127,10 @@ jobs:
       - name: Install OS Dependencies (needed for Webkit)
         run: npx playwright install --with-deps
 
-      - name: Set APP_URL if not passed in
-        if: env.APP_URL == null
-        run: |
-          echo "APP_URL=https://www.automationexercise.com" >> $GITHUB_ENV
+      # - name: Set APP_URL if not passed in
+      #   if: env.APP_URL == null
+      #   run: |
+      #     echo "APP_URL=https://www.automationexercise.com" >> $GITHUB_ENV
 
       - name: Run Playwright tests
         run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
