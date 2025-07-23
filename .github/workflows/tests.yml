@@ -183,9 +183,9 @@ jobs:
       STARTED_AT: ${{ needs.tests.outputs.started_at }}
       APP_URL: ${{ needs.tests.outputs.app_url }}
       PULL_REQUEST_URL: ${{ needs.tests.outputs.pull_request_url }}
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    # environment:
+    #   name: github-pages
+    #   url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
 
     steps:
