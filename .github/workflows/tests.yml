@@ -124,8 +124,8 @@ jobs:
             ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
 
-      - name: Install OS Dependencies (needed for Webkit)
-        run: npx playwright install --with-deps
+      # - name: Install OS Dependencies (needed for Webkit)
+      #   run: npx playwright install --with-deps
 
       # - name: Set APP_URL if not passed in
       #   if: env.APP_URL == null
