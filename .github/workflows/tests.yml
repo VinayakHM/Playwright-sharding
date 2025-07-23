@@ -135,6 +135,9 @@ jobs:
       - name: Run Playwright tests
         run: APP_URL=${{ env.APP_URL}} npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
+      - name: Ensure playwright-report directory exists
+        run: mkdir -p playwright-report
+
       - name: Copy Summary to playwright-report/ folder
         if: always()
         run: cp summary.json playwright-report/summary.json
