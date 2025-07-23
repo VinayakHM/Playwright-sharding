@@ -30,16 +30,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # - name: Extract Playwright Version
-      #   id: set-env
-      #   run: |
-      #     echo "PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package-lock.json').dependencies['@playwright/test'].version)")" >> $GITHUB_ENV
-      #     echo "STARTED_AT=${{ env.STARTED_AT }}" >> $GITHUB_OUTPUT
-      #     echo "PLAYWRIGHT_VERSION=${{ env.PLAYWRIGHT_VERSION }}" >> $GITHUB_OUTPUT
-
-      - name: Get installed Playwright version
-        id: playwright-version
-        run: echo "PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package-lock.json').dependencies['@playwright/test'].version)")" >> $GITHUB_ENV
+      - name: Extract Playwright Version
+        id: set-env
+        run: |
+          echo "PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package-lock.json').dependencies['@playwright/test'].version)")" >> $GITHUB_ENV
+          echo "STARTED_AT=${{ env.STARTED_AT }}" >> $GITHUB_OUTPUT
+          echo "PLAYWRIGHT_VERSION=${{ env.PLAYWRIGHT_VERSION }}" >> $GITHUB_OUTPUT
 
       - name: Cache Playwright binaries
         uses: actions/cache@v3
@@ -49,14 +45,6 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
-
-      - name: Create Output for ENV Variables
-        id: set-env
-        run: |
-          echo "PLAYWRIGHT_VERSION=${{env.PLAYWRIGHT_VERSION}}" >> $GITHUB_OUTPUT
-          echo "STARTED_AT=${{env.STARTED_AT}}" >> $GITHUB_OUTPUT
-          echo "APP_URL=${{env.APP_URL}}" >> $GITHUB_OUTPUT
-          echo "PULL_REQUEST_URL=${{env.PULL_REQUEST_URL}}" >> $GITHUB_OUTPUT
 
   playwright-tests:
     name: Playwright Tests
@@ -104,22 +92,6 @@ jobs:
 
       - name: Run Playwright Tests – Shard ${{ matrix.shardIndex }}
         run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
-
-      - name: Save Summary (if exists)
-        if: always()
-        run: |
-          mkdir -p playwright-report
-          if [ -f summary.json ]; then
-            cp summary.json playwright-report/summary.json
-          fi
-
-      - name: Upload Summary
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: report-${{ matrix.shardIndex }}
-          path: playwright-report/
-          retention-days: 2
 
       - name: Upload results.json
         uses: actions/upload-artifact@v4
@@ -176,9 +148,6 @@ jobs:
     - name: Display structure of downloaded files
       run: ls -R
 
-    - name: Run Report Merge
-      run: npm run merge
-
     - name: Display structure of Merged
       run: ls -R
     - name: Download all results.json artifacts
@@ -224,10 +193,6 @@ jobs:
 
     - name: Merge into HTML Report
       run: npx playwright merge-reports --reporter html ./all-blob-reports
-
-    - name: Copy Summary to html-report/ folder
-      if: always()
-      run: cp summary.json playwright-report/summary.json
 
     - name: Upload HTML report
       uses: actions/upload-artifact@v4
