@@ -92,13 +92,13 @@ jobs:
         shardIndex: [1, 2, 3, 4]
         shardTotal: [4]
     outputs:
-      # playwright_version: ${{ steps.set-env.outputs.PLAYWRIGHT_VERSION }}
+      playwright_version: ${{ steps.set-env.outputs.PLAYWRIGHT_VERSION }}
       started_at: ${{ steps.set-env.outputs.STARTED_AT}}
       # app_url: ${{ steps.set-env.outputs.APP_URL}}
       pull_request_url: ${{ steps.set-env.outputs.PULL_REQUEST_URL }}
 
-    # env:
-      # PLAYWRIGHT_VERSION: ${{ needs.install.outputs.playwright_version }}
+    env:
+      PLAYWRIGHT_VERSION: ${{ needs.install.outputs.playwright_version }}
       # STARTED_AT: ${{ needs.install.outputs.started_at }}
       APP_URL: ${{ needs.install.outputs.app_url }}
       # PULL_REQUEST_URL: ${{ needs.install.outputs.pull_request_url }}
