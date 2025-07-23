@@ -78,7 +78,7 @@ jobs:
         run: |
           echo "PLAYWRIGHT_VERSION=${{env.PLAYWRIGHT_VERSION}}" >> $GITHUB_OUTPUT
           echo "STARTED_AT=${{env.STARTED_AT}}" >> $GITHUB_OUTPUT
-          echo "APP_URL=${{env.APP_URL}}" >> $GITHUB_OUTPUT
+          # echo "APP_URL=${{env.APP_URL}}" >> $GITHUB_OUTPUT
           echo "PULL_REQUEST_URL=${{env.PULL_REQUEST_URL}}" >> $GITHUB_OUTPUT
 
   tests:
@@ -92,19 +92,19 @@ jobs:
         shardIndex: [1, 2, 3, 4]
         shardTotal: [4]
     outputs:
-      playwright_version: ${{ steps.set-env.outputs.PLAYWRIGHT_VERSION }}
+      # playwright_version: ${{ steps.set-env.outputs.PLAYWRIGHT_VERSION }}
       started_at: ${{ steps.set-env.outputs.STARTED_AT}}
-      app_url: ${{ steps.set-env.outputs.APP_URL}}
+      # app_url: ${{ steps.set-env.outputs.APP_URL}}
       pull_request_url: ${{ steps.set-env.outputs.PULL_REQUEST_URL }}
 
     env:
-      PLAYWRIGHT_VERSION: ${{ needs.install.outputs.playwright_version }}
+      # PLAYWRIGHT_VERSION: ${{ needs.install.outputs.playwright_version }}
       STARTED_AT: ${{ needs.install.outputs.started_at }}
-      APP_URL: ${{ needs.install.outputs.app_url }}
+      # APP_URL: ${{ needs.install.outputs.app_url }}
       PULL_REQUEST_URL: ${{ needs.install.outputs.pull_request_url }}
-      CURRENTS_PROJECT_ID: ${{ secrets.CURRENTS_PROJECT_ID }}
-      CURRENTS_RECORD_KEY: ${{ secrets.CURRENTS_RECORD_KEY }}
-      CURRENTS_CI_BUILD_ID: reporter-${{ github.repository }}-${{ github.run_id }}-${{ github.run_attempt }}
+      # CURRENTS_PROJECT_ID: ${{ secrets.CURRENTS_PROJECT_ID }}
+      # CURRENTS_RECORD_KEY: ${{ secrets.CURRENTS_RECORD_KEY }}
+      # CURRENTS_CI_BUILD_ID: reporter-${{ github.repository }}-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
       - uses: actions/checkout@v3
