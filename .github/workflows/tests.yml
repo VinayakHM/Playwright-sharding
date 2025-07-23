@@ -94,17 +94,17 @@ jobs:
     outputs:
       playwright_version: ${{ steps.set-env.outputs.PLAYWRIGHT_VERSION }}
       started_at: ${{ steps.set-env.outputs.STARTED_AT}}
-      # app_url: ${{ steps.set-env.outputs.APP_URL}}
+      app_url: ${{ steps.set-env.outputs.APP_URL}}
       pull_request_url: ${{ steps.set-env.outputs.PULL_REQUEST_URL }}
 
     env:
       PLAYWRIGHT_VERSION: ${{ needs.install.outputs.playwright_version }}
-      # STARTED_AT: ${{ needs.install.outputs.started_at }}
+      STARTED_AT: ${{ needs.install.outputs.started_at }}
       APP_URL: ${{ needs.install.outputs.app_url }}
-      # PULL_REQUEST_URL: ${{ needs.install.outputs.pull_request_url }}
+      PULL_REQUEST_URL: ${{ needs.install.outputs.pull_request_url }}
       # CURRENTS_PROJECT_ID: ${{ secrets.CURRENTS_PROJECT_ID }}
       # CURRENTS_RECORD_KEY: ${{ secrets.CURRENTS_RECORD_KEY }}
-      # CURRENTS_CI_BUILD_ID: reporter-${{ github.repository }}-${{ github.run_id }}-${{ github.run_attempt }}
+      CURRENTS_CI_BUILD_ID: reporter-${{ github.repository }}-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
       - uses: actions/checkout@v3
@@ -127,13 +127,13 @@ jobs:
       # - name: Install OS Dependencies (needed for Webkit)
       #   run: npx playwright install --with-deps
 
-      # - name: Set APP_URL if not passed in
-      #   if: env.APP_URL == null
-      #   run: |
-      #     echo "APP_URL=https://www.automationexercise.com" >> $GITHUB_ENV
+      - name: Set APP_URL if not passed in
+        if: env.APP_URL == null
+        run: |
+          echo "APP_URL=https://www.automationexercise.com" >> $GITHUB_ENV
 
       - name: Run Playwright tests
-        run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: APP_URL=${{ env.APP_URL}} npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Copy Summary to playwright-report/ folder
         if: always()
