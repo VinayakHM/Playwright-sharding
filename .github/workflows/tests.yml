@@ -258,46 +258,17 @@ jobs:
           path: playwright-report
           retention-days: 14
 
-      - name: Setup Pages
-        if: always()
-        uses: actions/configure-pages@v2
-
       - name: Upload artifact
         if: always()
         uses: actions/upload-pages-artifact@v3
         with:
           path: playwright-report/
 
-      - name: Deploy to GitHub Pages
-        if: always()
-        id: deployment
-        uses: actions/deploy-pages@v1
-
       - name: Output time taken
         if: always()
         run: |
           echo "Duration: $(($(($(date +%s) - ${{ env.STARTED_AT }}))/60)) minute(s)"
           echo "DURATION=$(($(($(date +%s) - ${{ env.STARTED_AT }}))/60))" >> $GITHUB_ENV
-
-      # - name: Notify MS Teams on Success
-      #   if: success()
-      #   uses: jdcargile/ms-teams-notification@v1.3
-      #   with:
-      #     github-token: ${{ github.token }} # this will use the runner's token.
-      #     ms-teams-webhook-uri: ${{ secrets.MSTEAMS_WEBHOOK }}
-      #     notification-summary: Results &#x2705; ${{ env.PASSED }} | &#x274C; ${{ env.FAILURES }}
-      #     notification-color: 28a745
-      #     timezone: America/Chicago
-
-      # - name: Notify MS Teams on Failure
-      #   if: failure()
-      #   uses: jdcargile/ms-teams-notification@v1.3
-      #   with:
-      #     github-token: ${{ github.token }}
-      #     ms-teams-webhook-uri: ${{ secrets.MSTEAMS_WEBHOOK }}
-      #     notification-summary: Results &#x2705; ${{ env.PASSED }} | &#x274C; ${{ env.FAILURES }}
-      #     notification-color: dc3545
-      #     timezone: America/Chicago
 
       - name: Send Slack Notification
         if: always()
