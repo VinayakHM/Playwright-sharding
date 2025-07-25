@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "merge": "ts-node --transpile-only lib/metrics/mergeReports.ts",
     "merge-playwright-results": "ts-node lib/metrics/merge-playwright-json.ts merged-results results.json merged-results/final/merged-results.json"
   },
   "keywords": [],
