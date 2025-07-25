@@ -147,8 +147,8 @@ jobs:
       - name: Remove Previous html-report directory if exists
         run: rm -rf playwright-report/html-report
 
-      - name: Run Report Merge
-        run: npm run merge
+      # - name: Run Report Merge
+      #   run: npm run merge
 
       - name: Display structure of Merged
         run: ls -R
