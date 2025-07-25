@@ -26,12 +26,10 @@ export default defineConfig({
   workers: process.env.CI ? 3 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   // reporter: 'html',
-  reporter: process.env.CI ?[['blob'],['playwright-json-summary-reporter', { outputFile: './playwright-report/summary.json' }],['json', { outputFile: './test-results/results/results.json' }]]:[
+  reporter: process.env.CI ?[['blob'],['json', { outputFile: './test-results/results/results.json' }]]:[
     ['html', { outputFolder: './test-results/report', open: 'on-failure' }],
     ['json', { outputFile: './test-results/results/results.json' }],
-    ['blob'],
-    ['playwright-json-summary-reporter', { outputFile: './playwright-report/summary.json' }]
-  ],
+    ['blob'] ],
 
   // reporter: [
   //   ['./src/utils/logger/TestListener.ts'],
