@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       playwright_version: ${{ steps.set-env.outputs.PLAYWRIGHT_VERSION }}
-      started_at: ${{ steps.set-env.outputs.STARTED_AT}}
 
     steps:
       - uses: actions/checkout@v3
@@ -20,8 +19,8 @@ jobs:
         with:
           node-version: 22
 
-      - name: Set current date as env variable
-        run: echo "STARTED_AT=$(date +%s)" >> $GITHUB_ENV
+      # - name: Set current date as env variable
+      #   run: echo "STARTED_AT=$(date +%s)" >> $GITHUB_ENV
 
       - name: Cache node_modules
         uses: actions/cache@v3
@@ -53,7 +52,6 @@ jobs:
         id: set-env
         run: |
           echo "PLAYWRIGHT_VERSION=${{env.PLAYWRIGHT_VERSION}}" >> $GITHUB_OUTPUT
-          echo "STARTED_AT=${{env.STARTED_AT}}" >> $GITHUB_OUTPUT
 
   tests:
     name: Run Playwright Tests (${{ matrix.shardIndex }}/${{ strategy.job-total }})
@@ -67,11 +65,9 @@ jobs:
         shardTotal: [4]
     outputs:
       playwright_version: ${{ steps.set-env.outputs.PLAYWRIGHT_VERSION }}
-      started_at: ${{ steps.set-env.outputs.STARTED_AT}}
 
     env:
       PLAYWRIGHT_VERSION: ${{ needs.install.outputs.playwright_version }}
-      STARTED_AT: ${{ needs.install.outputs.started_at }}
 
     steps:
       - uses: actions/checkout@v3
@@ -100,16 +96,12 @@ jobs:
       - name: Ensure playwright-report directory exists
         run: mkdir -p playwright-report
 
-      - name: Copy Summary to playwright-report/ folder
-        if: always()
-        run: cp summary.json playwright-report/summary.json
-
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: report-${{ matrix.shardIndex }}
-          path: playwright-report/
-          retention-days: 3
+      # - uses: actions/upload-artifact@v4
+      #   if: always()
+      #   with:
+      #     name: report-${{ matrix.shardIndex }}
+      #     path: playwright-report/
+      #     retention-days: 3
 
       - name: Upload results.json
         uses: actions/upload-artifact@v4
@@ -127,13 +119,6 @@ jobs:
           path: blob-report/
           retention-days: 1
 
-      - name: Create Output for ENV Variables
-        if: always()
-        id: set-env
-        run: |
-          echo "PLAYWRIGHT_VERSION=${{env.PLAYWRIGHT_VERSION}}" >> $GITHUB_OUTPUT
-          echo "STARTED_AT=${{env.STARTED_AT}}" >> $GITHUB_OUTPUT
-
   merge:
     name: Merge Reports
     if: ${{ always() }}
@@ -142,7 +127,6 @@ jobs:
     
     env:
       PLAYWRIGHT_VERSION: ${{ needs.tests.outputs.playwright_version }}
-      STARTED_AT: ${{ needs.tests.outputs.started_at }}
     
     runs-on: ubuntu-latest
 
@@ -180,105 +164,44 @@ jobs:
       - name: Display structure of Merged
         run: ls -R
 
-      - name: Read Summary Report to Get Test Results
-        if: always()
-        run: |
-          STATUS=$(cat ./summary.json | jq -r '.status')
-          STATUS="$(echo $STATUS | sed 's/failed/failure/;s/passed/success/')"
-          echo "STATUS=$STATUS" >> $GITHUB_ENV
-          PASSED=$(cat ./summary.json | jq -r '.passed[]' | tr '\n' ' ')
-          echo "PASSED=$PASSED" >> $GITHUB_ENV
-          TIMEOUT=$(cat ./summary.json | jq -r '.timedOut[]' | tr '\n' ' ' | sed 's/ /--->TIMEOUT /g')
-          FAILURES=$(cat ./summary.json | jq -r '.failed[]' | tr '\n' ' ')
-          FAILURES+=$TIMEOUT
-          echo "FAILURES=$FAILURES" >> $GITHUB_ENV
-
       - name: Download blob reports from GitHub Actions Artifacts
         uses: actions/download-artifact@v4
         with:
-          # name: all-blob-reports
           path: all-blob-reports
-      - name: Flatten report zips
-        run: |
-          find all-blob-reports -name '*.zip' -exec mv {} all-blob-reports \;
+          pattern: blob-report-*
+          merge-multiple: true
 
       - name: Merge into HTML Report
-        run: npx playwright merge-reports --config=merge.config.ts ./all-blob-reports
-
-      - name: Copy Summary to html-report/ folder
-        if: always()
-        run: cp summary.json playwright-report/summary.json
+        run: npx playwright merge-reports --reporter html ./all-blob-reports
 
       - name: Upload HTML report
         uses: actions/upload-artifact@v4
         with:
-          name: html-report-attempt-${{ github.run_attempt }}
+          name: html-report--attempt-${{ github.run_attempt }}
           path: playwright-report
-          retention-days: 14
+          retention-days: 2
 
-      - name: Output time taken
-        if: always()
-        run: |
-          echo "Duration: $(($(($(date +%s) - ${{ env.STARTED_AT }}))/60)) minute(s)"
-          echo "DURATION=$(($(($(date +%s) - ${{ env.STARTED_AT }}))/60))" >> $GITHUB_ENV
+      # - name: Download blob reports from GitHub Actions Artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     # name: all-blob-reports
+      #     path: all-blob-reports
 
-      - name: Send Slack Notification
-        if: always()
-        uses: 8398a7/action-slack@v3
-        with:
-          status: custom
-          fields: repo,eventName,workflow,job,took
-          custom_payload: |
-            {
-              attachments: [{
-                color: '${{ env.STATUS }}' === 'success' ? 'good' : 'danger',
-                title: `Playwright Demo Automation Results :test_tube:`,
-                fields: [{
-                  title: 'Site Under Test',
-                  value: '${{ env.APP_URL }}',
-                  short: true
-                },
-                {
-                  title: 'Triggered By',
-                  value: [{'origin': 'pull_request', 'new': 'Pull Request'}, {'origin': 'schedule', 'new': 'Schedule'}, {'origin': 'repository_dispatch', 'new': 'Deploy'}, {'origin': 'workflow_dispatch', 'new': 'GitHub Actions'}].find(item => item.origin === `${process.env.AS_EVENT_NAME}`).new || `${process.env.AS_EVENT_NAME}`,
-                  short: true
-                },
-                {
-                  title: 'Repo',
-                  value: `${process.env.AS_REPO}`,
-                  short: true
-                },
-                {
-                  title: 'Execution Time',
-                  value: `Took ${{ env.DURATION }} minute(s)`,
-                  short: true
-                },
-                {
-                  title: 'Workflow',
-                  value: `${process.env.AS_WORKFLOW}`,
-                  short: true
-                },
-                {
-                  title: 'Total Tests',
-                  value: (`${{ env.FAILURES }}`.match(/.spec.ts/g) || []).length + (`${{ env.PASSED }}`.match(/.spec.ts/g) || []).length,
-                  short: true
-                },
-                {
-                  title: 'Pull Request',
-                  value: `${{ env.PULL_REQUEST_URL }}`,
-                  short: false
-                },
-                {
-                  title: 'Failures',
-                  value: `${{ env.FAILURES }}` === '' ? 'No failures' : `${{ env.FAILURES }}`.match(/.spec.ts/g).length > 10 ? `Too many failures to print. Please go to GitHub to see full list of failures` : '```${{ env.FAILURES }}```'.replace(/ /g, '\n'),
-                  short: false
-                }]
-              }]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-          MATRIX_CONTEXT: ${{ toJson(matrix) }}
+      # - name: Flatten report zips
+      #   run: |
+      #     find all-blob-reports -name '*.zip' -exec mv {} all-blob-reports \;
 
+      # - name: Merge into HTML Report
+      #   run: npx playwright merge-reports --config=merge.config.ts ./all-blob-reports
+
+      # - name: Upload HTML report
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: html-report-attempt-${{ github.run_attempt }}
+      #     path: playwright-report
+      #     retention-days: 14
+
+# below code is with result json report
       - name: Display structure of Merged
         run: ls -R
       - name: Download all results.json artifacts
@@ -355,20 +278,20 @@ jobs:
             ]
           }' ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: all-blob-reports
-          pattern: blob-report-*
-          merge-multiple: true
+      # - name: Download blob reports from GitHub Actions Artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     path: all-blob-reports
+      #     pattern: blob-report-*
+      #     merge-multiple: true
 
-      - name: Merge into HTML Report
-        run: npx playwright merge-reports --reporter html ./all-blob-reports
+      # - name: Merge into HTML Report
+      #   run: npx playwright merge-reports --reporter html ./all-blob-reports
 
-      - name: Upload HTML report
-        uses: actions/upload-artifact@v4
-        with:
-          name: html-report--attempt-${{ github.run_attempt }}
-          path: playwright-report
-          retention-days: 2
+      # - name: Upload HTML report
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: html-report--attempt-${{ github.run_attempt }}
+      #     path: playwright-report
+      #     retention-days: 2
 
