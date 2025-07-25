@@ -4,7 +4,6 @@ on:
   # pull_request:
   # schedule:
   #   - cron: "0 6 * * *"
-  # repository_dispatch:
   workflow_dispatch:
 jobs:
   install:
@@ -18,9 +17,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 22
-
-      # - name: Set current date as env variable
-      #   run: echo "STARTED_AT=$(date +%s)" >> $GITHUB_ENV
 
       - name: Cache node_modules
         uses: actions/cache@v3
@@ -110,7 +106,7 @@ jobs:
           name: results-${{ matrix.shardIndex }}
           path: test-results/results/results.json
           retention-days: 2
-          
+
       - name: Upload Blob Report
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -118,13 +114,6 @@ jobs:
           name: blob-report-${{ matrix.shardIndex }}
           path: blob-report
           retention-days: 1
-      # - name: Upload blob report to GitHub Actions Artifacts
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: all-blob-reports-${{ matrix.shardIndex }}
-      #     path: blob-report/
-      #     retention-days: 1
 
   merge:
     name: Merge Reports
@@ -188,27 +177,6 @@ jobs:
           path: playwright-report
           retention-days: 2
 
-      # - name: Download blob reports from GitHub Actions Artifacts
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     # name: all-blob-reports
-      #     path: all-blob-reports
-
-      # - name: Flatten report zips
-      #   run: |
-      #     find all-blob-reports -name '*.zip' -exec mv {} all-blob-reports \;
-
-      # - name: Merge into HTML Report
-      #   run: npx playwright merge-reports --config=merge.config.ts ./all-blob-reports
-
-      # - name: Upload HTML report
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: html-report-attempt-${{ github.run_attempt }}
-      #     path: playwright-report
-      #     retention-days: 14
-
-# below code is with result json report
       - name: Display structure of Merged
         run: ls -R
       - name: Download all results.json artifacts
@@ -284,21 +252,3 @@ jobs:
               }
             ]
           }' ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      # - name: Download blob reports from GitHub Actions Artifacts
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     path: all-blob-reports
-      #     pattern: blob-report-*
-      #     merge-multiple: true
-
-      # - name: Merge into HTML Report
-      #   run: npx playwright merge-reports --reporter html ./all-blob-reports
-
-      # - name: Upload HTML report
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: html-report--attempt-${{ github.run_attempt }}
-      #     path: playwright-report
-      #     retention-days: 2
-
