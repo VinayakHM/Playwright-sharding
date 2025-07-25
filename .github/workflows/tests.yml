@@ -132,9 +132,6 @@ jobs:
     needs: [install, tests]
     timeout-minutes: 60
     
-    # concurrency:
-    #   group: "pages"
-    #   cancel-in-progress: true
     env:
       PLAYWRIGHT_VERSION: ${{ needs.tests.outputs.playwright_version }}
       STARTED_AT: ${{ needs.tests.outputs.started_at }}
@@ -211,11 +208,11 @@ jobs:
           path: playwright-report
           retention-days: 14
 
-      - name: Upload artifact
-        if: always()
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: playwright-report/
+      # - name: Upload artifact
+      #   if: always()
+      #   uses: actions/upload-pages-artifact@v3
+      #   with:
+      #     path: playwright-report/
 
       - name: Output time taken
         if: always()
