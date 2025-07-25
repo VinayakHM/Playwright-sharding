@@ -206,7 +206,7 @@ jobs:
             ~/.cache/ms-playwright
           key: playwright-${{ hashFiles('package-lock.json') }}
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           path: playwright-report/
 
@@ -236,7 +236,7 @@ jobs:
           echo "FAILURES=$FAILURES" >> $GITHUB_ENV
 
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@v3
+        uses: aactions/download-artifact@v4
         with:
           name: all-blob-reports
           path: all-blob-reports
