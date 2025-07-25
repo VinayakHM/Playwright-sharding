@@ -92,13 +92,6 @@ jobs:
       - name: Ensure playwright-report directory exists
         run: mkdir -p playwright-report
 
-      # - uses: actions/upload-artifact@v4
-      #   if: always()
-      #   with:
-      #     name: report-${{ matrix.shardIndex }}
-      #     path: playwright-report/
-      #     retention-days: 3
-
       - name: Upload results.json
         uses: actions/upload-artifact@v4
         if: always()
@@ -235,7 +228,7 @@ jobs:
                 "color": "'"${{ env.SLACK_COLOR }}"'",
                 "title": "🚀 :playwright: Playwright Test Results",
                 "fields": [
-                  { "title": "Site", "value": "'"${{ env.APP_URL }}"'", "short": true },
+                  { "title": "Site", "value": "'"${{ github.event.repository.name }}"'", "short": true },
                   { "title": "Triggered By", "value": "'"${{ github.event_name }}"'", "short": true },
                   { "title": "Repo", "value": "'"${{ github.repository }}"'", "short": true },
                   { "title": "Workflow", "value": "'"${{ github.workflow }}"'", "short": true },
