@@ -71,6 +71,8 @@ jobs:
     env:
       PLAYWRIGHT_VERSION: ${{ needs.install.outputs.playwright_version }}
       STARTED_AT: ${{ needs.install.outputs.started_at }}
+      user: ${{ secrets.USER }}
+      pwd: ${{ secrets.PWD }}
 
     steps:
       - uses: actions/checkout@v4

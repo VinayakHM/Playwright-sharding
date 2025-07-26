@@ -377,3 +377,8 @@ test('get started link - failure1', async ({ page }) => {
   // Expects page to have a heading with the name of Installation.
   await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
 });
+
+test('read username and password from env',async()=>{
+  console.log('Username is : '+process.env.user);
+  console.log('Password is : '+process.env.pwd);
+})
