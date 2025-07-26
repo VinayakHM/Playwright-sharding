@@ -162,9 +162,6 @@ jobs:
       - name: Remove Previous html-report directory if exists
         run: rm -rf playwright-report/html-report
 
-      # - name: Run Report Merge
-      #   run: npm run merge
-
       - name: Display structure of Merged
         run: ls -R
 
@@ -215,20 +212,6 @@ jobs:
           skip=$(echo $stats | jq '.skipped')
           flaky=$(echo $stats | jq '.flaky')
           duration=$(echo $stats | jq '.duration')
-
-          # Convert milliseconds to seconds
-          # duration_sec=$((duration / 1000))
-
-          # # Calculate hours, minutes, seconds
-          # hours=$((duration_sec / 3600))
-          # minutes=$(((duration_sec % 3600) / 60))
-          # seconds=$((duration_sec % 60))
-
-          # # Format the result
-          # duration_hms=$(printf '%02dh:%02dm:%02ds' $hours $minutes $seconds)
-
-          # echo "Converted duration: $duration_hms"
-          # # duration_hms=$(printf '%02dh:%02dm:%02ds' $(echo "$duration/3600" | bc) $(echo "($duration%3600)/60" | bc) $(echo "$duration%60" | bc))
           health=$((pass * 100 / total))
           echo "total=$total" >> $GITHUB_ENV
           echo "pass=$pass" >> $GITHUB_ENV
