@@ -238,9 +238,11 @@ jobs:
       - name: Output time taken
         if: always()
         run: |
-          echo "Duration: $(($(($(date +%s) - ${{ env.STARTED_AT }}))/60)) minute(s)"
-          echo "DURATION=$(($(($(date +%s) - ${{ env.STARTED_AT }}))/60))" >> $GITHUB_ENV
-          
+          # echo "Duration: $(($(($(date +%s) - ${{ env.STARTED_AT }}))/60)) minute(s)"
+          # echo "DURATION=$(($(($(date +%s) - ${{ env.STARTED_AT }}))/60))" >> $GITHUB_ENV
+          echo "Duration: $(( ( $(date +%s) - ${STARTED_AT} ) / 60 )) minute(s)"
+          echo "DURATION=$(( ( $(date +%s) - ${STARTED_AT} ) / 60 ))" >> $GITHUB_ENV
+
       - name: Set Slack color based on job status
         if: always()
         run: |
