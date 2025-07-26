@@ -19,6 +19,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Set current date as env variable
+        run: echo "STARTED_AT=$(date +%s)" >> $GITHUB_ENV
+
       - name: Cache node_modules
         uses: actions/cache@v3
         id: node-modules-cache
@@ -238,11 +241,9 @@ jobs:
       - name: Output time taken
         if: always()
         run: |
-          # echo "Duration: $(($(($(date +%s) - ${{ env.STARTED_AT }}))/60)) minute(s)"
-          # echo "DURATION=$(($(($(date +%s) - ${{ env.STARTED_AT }}))/60))" >> $GITHUB_ENV
-          echo "Duration: $(( ( $(date +%s) - ${STARTED_AT} ) / 60 )) minute(s)"
-          echo "DURATION=$(( ( $(date +%s) - ${STARTED_AT} ) / 60 ))" >> $GITHUB_ENV
-
+          echo "Duration: $(($(($(date +%s) - ${{ env.STARTED_AT }}))/60)) minute(s)"
+          echo "DURATION=$(($(($(date +%s) - ${{ env.STARTED_AT }}))/60))" >> $GITHUB_ENV
+          
       - name: Set Slack color based on job status
         if: always()
         run: |
