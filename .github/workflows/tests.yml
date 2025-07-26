@@ -273,7 +273,7 @@ jobs:
                   { "title": "⚠️ Skipped", "value": "'"${{ env.skip }}"'", "short": true },
                   { "title": "🤷 Flaky", "value": "'"${{ env.flaky }}"'", "short": true },
                   { "title": "🩺 Health", "value": "'"${{ env.health }}%"'", "short": true },
-                  { "title": "⏱️ Duration", "value": `Took ${{ env.DURATION }} minute(s)`, "short": true },
+                  { "title": "⏱️ Duration", "value": "Took ${{ env.DURATION }} minute(s)", "short": true },
                   {"title": "User", "value": "'"${{ github.actor }}"'", "short": true }
                 ]
               }
