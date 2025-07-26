@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       playwright_version: ${{ steps.set-env.outputs.PLAYWRIGHT_VERSION }}
+      started_at: ${{ steps.set-env.outputs.STARTED_AT}}
 
     steps:
       - uses: actions/checkout@v3
@@ -48,6 +49,7 @@ jobs:
         id: set-env
         run: |
           echo "PLAYWRIGHT_VERSION=${{env.PLAYWRIGHT_VERSION}}" >> $GITHUB_OUTPUT
+          echo "STARTED_AT=${{env.STARTED_AT}}" >> $GITHUB_OUTPUT
 
   tests:
     name: Run Playwright Tests (${{ matrix.shardIndex }}/${{ strategy.job-total }})
@@ -61,9 +63,11 @@ jobs:
         shardTotal: [4]
     outputs:
       playwright_version: ${{ steps.set-env.outputs.PLAYWRIGHT_VERSION }}
+      started_at: ${{ steps.set-env.outputs.STARTED_AT}}
 
     env:
       PLAYWRIGHT_VERSION: ${{ needs.install.outputs.playwright_version }}
+      STARTED_AT: ${{ needs.install.outputs.started_at }}
 
     steps:
       - uses: actions/checkout@v3
@@ -108,6 +112,13 @@ jobs:
           path: blob-report
           retention-days: 1
 
+      - name: Create Output for ENV Variables
+        if: always()
+        id: set-env
+        run: |
+          echo "PLAYWRIGHT_VERSION=${{env.PLAYWRIGHT_VERSION}}" >> $GITHUB_OUTPUT
+          echo "STARTED_AT=${{env.STARTED_AT}}" >> $GITHUB_OUTPUT
+
   merge:
     name: Merge Reports
     if: ${{ always() }}
@@ -116,6 +127,7 @@ jobs:
     
     env:
       PLAYWRIGHT_VERSION: ${{ needs.tests.outputs.playwright_version }}
+      STARTED_AT: ${{ needs.tests.outputs.started_at }}
     
     runs-on: ubuntu-latest
 
@@ -214,7 +226,7 @@ jobs:
 
           # echo "Converted duration: $duration_hms"
           # # duration_hms=$(printf '%02dh:%02dm:%02ds' $(echo "$duration/3600" | bc) $(echo "($duration%3600)/60" | bc) $(echo "$duration%60" | bc))
-          # health=$((pass * 100 / total))
+          health=$((pass * 100 / total))
           echo "total=$total" >> $GITHUB_ENV
           echo "pass=$pass" >> $GITHUB_ENV
           echo "fail=$fail" >> $GITHUB_ENV
@@ -223,6 +235,12 @@ jobs:
           echo "duration=$duration_hms" >> $GITHUB_ENV
           echo "health=$health" >> $GITHUB_ENV
 
+      - name: Output time taken
+        if: always()
+        run: |
+          echo "Duration: $(($(($(date +%s) - ${{ env.STARTED_AT }}))/60)) minute(s)"
+          echo "DURATION=$(($(($(date +%s) - ${{ env.STARTED_AT }}))/60))" >> $GITHUB_ENV
+          
       - name: Set Slack color based on job status
         if: always()
         run: |
@@ -252,7 +270,7 @@ jobs:
                   { "title": "⚠️ Skipped", "value": "'"${{ env.skip }}"'", "short": true },
                   { "title": "🤷 Flaky", "value": "'"${{ env.flaky }}"'", "short": true },
                   { "title": "🩺 Health", "value": "'"${{ env.health }}%"'", "short": true },
-                  { "title": "⏱️ Duration", "value": "${{ env.duration }}", "short": true },
+                  { "title": "⏱️ Duration", "value": "${{ env.DURATION }}", "short": true },
                   {"title": "User", "value": "'"${{ github.actor }}"'", "short": true }
                 ]
               }
